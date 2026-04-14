@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="toko online brand kaos lokal nusantara - koleksi t-shirt design unik brand fashion lokal indonesia" />
+  <meta name="keywords" content="brand kaos lokal, brand t-shirt lokal, toko brand lokal, brand nusantara, fashion lokal, kaos lokal, brand fashion indonesia, t-shirt unik lokal, brand kaos nusantara, desain kaos lokal, inverted exe, teepublic, tees.co.id, inverted-exe.shop" />
+  <title>shop — !nverted.exe</title>
+
+  <!-- Fonts (matching original) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Remix Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+
+  <link rel="icon" href="../image/logo.png" />
+  <link rel="canonical" href="https://inverted-exe.shop/shop" />
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://inverted-exe.shop/shop">
+  <meta property="og:title" content="shop brand kaos lokal nusantara - inverted exe">
+  <meta property="og:description" content="toko online t-shirt lokal dengan koleksi desain unik brand fashion lokal indonesia">
+  <meta property="og:image" content="https://inverted-exe.shop/image/brand.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "inverted exe t-shirt",
+    "description": "toko online brand kaos lokal nusantara dengan koleksi t-shirt design unik brand fashion lokal indonesia",
+    "image": [
+      "https://inverted-exe.shop/image/brand.png"
+    ],
+    "brand": {
+      "@type": "Brand",
+      "name": "inverted exe"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": "https://inverted-exe.shop/shop",
+      "priceCurrency": "IDR",
+      "price": "0",
+      "availability": "https://schema.org/InStock",
+      "priceValidUntil": "2026-12-31"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="../styles.css">
+  <script src="../performance.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="../database.js"></script>
+  <script src="../database-sync.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <button class="burger" aria-label="menu" id="burger">
+      <i class="ri-menu-line burger-menu"></i>
+      <i class="ri-close-line burger-close"></i>
+    </button>
+
+    <nav class="nav-left">
+      <a href="/shop" class="nav-link active">shop</a>
+      <a href="/archive" class="nav-link">archive</a>
+      <a href="/gallery" class="nav-link">gallery</a>
+    </nav>
+
+    <div class="brand">
+      <a href="/"><img src="../image/brand.png" alt="!nverted.exe" /></a>
+    </div>
+
+    <div class="nav-right">
+      <a href="/!nverted.exe" class="nav-link profile-link" title="profile" aria-label="profile">
+        <i class="ri-user-line"></i>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <!-- SHOP PAGE -->
+    <section class="shop-page">
+      <div class="page-header">
+  
+        <h2><strong>!nverted.exe</strong> shop</h2>
+        <p id="current-time">Loading time...</p>
+      </div>
+      
+      <div class="shop-grid">
+        <!-- Shop items loaded dynamically -->
+      </div>
+        
+      <section class="footer landing-footer">
+
+
+  </main>
+   <section class="footer landing-footer">
+          <p>52353 — central java. ID</p>
+<p><strong>!nv.exe</strong></p>
+      </section>
+  <div class="mobile-nav-overlay" id="mobileNav"></div>
+
+  <script src="../script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      displayShopItems();
+      updateTime();
+      setInterval(updateTime, 1000);
+    });
+
+    function updateTime() {
+      const now = new Date();
+      const indonesiaTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // UTC+7 for WIB
+      const options = { 
+        timeZone: 'Asia/Jakarta', 
+        weekday: 'long',
+        month: 'long', 
+        day: '2-digit',
+        year: 'numeric'
+      };
+      const timeString = indonesiaTime.toLocaleString('en-US', options);
+      const parts = timeString.split(', ');
+      const weekday = parts[0];
+      const monthDay = parts[1];
+      const year = parts[2];
+      const formattedTime = `${weekday} — ${monthDay} ${year}`;
+      document.getElementById('current-time').textContent = formattedTime;
+    }
+  </script>
+</body>
+</html>

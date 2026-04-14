@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/login.html
+
+Sitemap: https://inverted-exe.shop/sitemap.xml

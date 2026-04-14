@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>admin login - !nverted.exe</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Remix Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+
+  <link rel="icon" href="../image/logo.png" />
+  <link rel="stylesheet" href="../styles.css">
+  
+  
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      padding: calc(var(--page-padding));
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .login-header img {
+      height: 40px;
+      margin-bottom: 20px;
+    }
+
+    .login-header h1 {
+      font-size: 28px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+      text-align: center;
+      display: block;
+      width: 100%;
+    }
+
+    .login-header p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0;
+      text-transform: lowercase;
+      text-align: center;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-group input {
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 13px;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .login-button {
+      padding: 12px 24px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: lowercase;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      margin-top: 8px;
+    }
+
+    .login-button:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .login-button:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .login-error {
+      padding: 12px 16px;
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      color: #ff6b6b;
+      font-size: 12px;
+      border-radius: 2px;
+      display: none;
+      text-transform: lowercase;
+    }
+
+    .login-error.show {
+      display: block;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .login-footer a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .login-footer a:hover {
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .login-container {
+        max-width: 100%;
+      }
+
+      .login-header h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <img src="../image/brand.png" alt="!nverted.exe" />
+      <h1>admin login</h1>
+      <p>authentication required</p>
+    </div>
+
+    <form class="login-form" id="loginForm">
+      <div class="form-group">
+        <label for="email">email</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="admin@inverted-exe.shop"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">password</label>
+        <input 
+          type="password" 
+          id="password" 
+          placeholder="enter password" 
+          required
+        />
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <button type="submit" class="login-button">login</button>
+    </form>
+
+    <div class="login-footer">
+      <p>inverted exe © 2026</p>
+    </div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="../database.js"></script>
+
+  <script>
+    // Firebase Auth login for admin panel
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
+    const auth = firebase.auth();
+
+    function isAccountLocked() {
+      const lockout = localStorage.getItem('adminLockoutTime');
+      if (!lockout) return false;
+
+      const lockoutTime = parseInt(lockout);
+      const now = Date.now();
+
+      if (now < lockoutTime) {
+        const remainingTime = Math.ceil((lockoutTime - now) / 1000 / 60);
+        return { locked: true, remainingTime };
+      } else {
+        localStorage.removeItem('adminLockoutTime');
+        localStorage.removeItem('adminAttempts');
+        return { locked: false };
+      }
+    }
+
+    function getLoginAttempts() {
+      const attempts = localStorage.getItem('adminAttempts');
+      return attempts ? parseInt(attempts) : 0;
+    }
+
+    function incrementLoginAttempts() {
+      const attempts = getLoginAttempts() + 1;
+      localStorage.setItem('adminAttempts', attempts.toString());
+
+      if (attempts >= MAX_ATTEMPTS) {
+        const lockoutTime = Date.now() + LOCKOUT_TIME;
+        localStorage.setItem('adminLockoutTime', lockoutTime.toString());
+        return { locked: true, attempts };
+      }
+      return { locked: false, attempts };
+    }
+
+    function resetLoginAttempts() {
+      localStorage.removeItem('adminAttempts');
+      localStorage.removeItem('adminLockoutTime');
+    }
+
+    function logSecurityEvent(event, details) {
+      const timestamp = new Date().toISOString();
+      const eventLog = localStorage.getItem('adminSecurityLog') || '[]';
+      const logs = JSON.parse(eventLog);
+      logs.push({ timestamp, event, details, ip: 'local' });
+      if (logs.length > 50) logs.shift();
+      localStorage.setItem('adminSecurityLog', JSON.stringify(logs));
+    }
+
+    function showError(message, warning = false) {
+      const errorDiv = document.getElementById('loginError');
+      errorDiv.textContent = message;
+      errorDiv.style.background = warning ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 68, 68, 0.1)';
+      errorDiv.style.borderColor = warning ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 68, 68, 0.3)';
+      errorDiv.style.color = warning ? '#ffb74d' : '#ff6b6b';
+      errorDiv.classList.add('show');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const lockoutStatus = isAccountLocked();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (lockoutStatus.locked) {
+        showError(`⚠️ account locked. try again in ${lockoutStatus.remainingTime} minutes.`, true);
+        logSecurityEvent('locked_account_attempt', { attempts: getLoginAttempts() });
+        return;
+      }
+
+      try {
+        // Step 1: Authenticate with Firebase on client (get ID token)
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const idToken = await userCredential.user.getIdToken();
+
+        // Step 2: Send token to backend for verification
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, idToken: 'test-token' }) // Using test token for development
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Authentication failed');
+        }
+
+        // Step 3: Store session token (not ID token)
+        sessionStorage.setItem('sessionToken', result.sessionToken);
+
+        // Sign out from Firebase (no longer needed)
+        await firebase.auth().signOut();
+
+        resetLoginAttempts();
+        showError('✓ authentication successful [access granted]', true);
+        logSecurityEvent('successful_login', { email });
+
+        setTimeout(() => {
+          window.location.href = '/admin/';
+        }, 1000);
+
+      } catch (error) {
+        const result = incrementLoginAttempts();
+        const attempts = result.attempts;
+        const remainingAttempts = MAX_ATTEMPTS - attempts;
+
+        if (result.locked) {
+          showError(`✗ authentication failed. account locked for 15 minutes after ${MAX_ATTEMPTS} failed attempts.`);
+          logSecurityEvent('account_locked', { after_attempts: MAX_ATTEMPTS, email });
+        } else {
+          showError(`✗ ${error.message}. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`);
+          logSecurityEvent('failed_login_attempt', { attempt_number: attempts, email, error: error.message });
+        }
+
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+      }
+    });
+
+    // Remove Firebase Auth state listener since we use session tokens now
+    // auth.onAuthStateChanged((user) => {
+    //   if (user) {
+    //     window.location.href = '/admin/';
+    //   }
+    // });
+
+    function setupSessionTimeout() {
+      let timeout;
+      const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+      function resetTimeout() {
+        clearTimeout(timeout);
+        // Check if session token exists
+        if (sessionStorage.getItem('sessionToken')) {
+          timeout = setTimeout(() => {
+            sessionStorage.removeItem('sessionToken');
+            window.location.href = '/admin/login.html';
+          }, SESSION_TIMEOUT);
+        }
+      }
+
+      document.addEventListener('mousemove', resetTimeout);
+      document.addEventListener('keypress', resetTimeout);
+      document.addEventListener('click', resetTimeout);
+
+      resetTimeout();
+    }
+
+    window.addEventListener('beforeunload', () => {
+      document.getElementById('password').value = '';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupSessionTimeout();
+    });
+  </script>
+</body>
+</html>

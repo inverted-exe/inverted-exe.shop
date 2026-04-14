@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="View detailed information about our digital products and brand t-shirt at inverted-exe.shop. Get all the details you need before purchasing t-shirts." />
+  <meta name="keywords" content="product details, digital products, inverted exe, inverted-exe.shop, shop details, brand t-shirt, t-shirt" />
+  <title>product — !nverted.exe</title>
+
+  <!-- Fonts (matching original) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Remix Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+
+  <link rel="icon" href="../image/logo.png" />
+
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <button class="burger" aria-label="menu" id="burger">
+      <i class="ri-menu-line burger-menu"></i>
+      <i class="ri-close-line burger-close"></i>
+    </button>
+
+    <nav class="nav-left">
+      <a href="/shop" class="nav-link active">shop</a>
+      <a href="/archive" class="nav-link">archive</a>
+      <a href="/gallery" class="nav-link">gallery</a>
+    </nav>
+
+    <div class="brand">
+      <a href="/"><img src="../image/brand.png" alt="!nverted.exe" /></a>
+    </div>
+
+    <div class="nav-right">
+      <a href="/!nverted.exe" class="nav-link profile-link" title="profile" aria-label="profile">
+        <i class="ri-user-line"></i>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <!-- PRODUCT DETAIL PAGE -->
+    <section class="product-detail-page">
+      <div class="detail-container">
+        <!-- Back Button -->
+        <a href="/shop" class="back-link">
+          <i class="ri-arrow-left-line"></i> back to shop
+        </a>
+
+        <div class="detail-content">
+          <!-- Image Gallery -->
+          <div class="detail-gallery-wrapper">
+            <div id="detailProductImages" class="detail-images-container"></div>
+          </div>
+
+          <!-- Product Info - Compact Layout -->
+          <div class="detail-info">
+            <!-- Header Section -->
+            <div class="detail-header">
+              <h1 id="detailProductName"></h1>
+              <div class="detail-meta-top">
+                <span class="meta-category" id="detailProductCategory"></span>
+                <span class="meta-date" id="detailCreatedAt"></span>
+              </div>
+              <div class="detail-meta-designer" id="detailDesignBy" style="display:none;">
+                <span>design by</span>
+              </div>
+            </div>
+
+            <!-- Price Section -->
+            <div class="detail-price-section">
+              <span id="detailProductPrice" class="price-value"></span>
+            </div>
+
+            <!-- Description -->
+            <div class="detail-description">
+              <p id="detailProductDescription"></p>
+            </div>
+
+            <!-- Available Sizes (Pills) -->
+            <div class="detail-sizes" id="detailSizes" style="display:none;">
+              <div class="sizes-label">available sizes:</div>
+              <div class="sizes-pills" id="sizesPillsContainer"></div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="detail-actions">
+              <button class="action-btn buy-on-teepublic" id="detailTeepublicBtn" style="display:none;">
+                <i class="ri-external-link-line"></i> buy on teepublic for global
+              </button>
+              <div class="action-divider" id="actionDivider" style="display:none;">or</div>
+              <button class="action-btn buy-on-tees" id="detailTeesBtn" style="display:none;">
+                <i class="ri-external-link-line"></i> buy on tees for id
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  </main>
+   <section class="footer landing-footer">
+        <p>52353 — central java. ID</p>
+<p><strong>!nv.exe</strong></p>
+      </section>
+  <div class="mobile-nav-overlay" id="mobileNav"></div>
+
+  <script src="../script.js"></script>
+  <script src="./product-detail.js"></script>
+</body>
+</html>
