@@ -215,45 +215,79 @@ app.post('/api/admin/upload-images', async (req, res) => {
       return res.status(400).json({ error: 'No images provided' });
     }
 
-    const bucket = admin.storage().bucket();
     const uploadedUrls = [];
 
     for (let i = 0; i < images.length; i++) {
       const base64Data = images[i];
+      
       if (!base64Data.startsWith('data:image/')) {
+        console.log(`Skipping non-image data at index ${i}`);
         continue; // Skip non-image data
       }
 
-      // Extract mime type and base64 data
-      const matches = base64Data.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
-      if (!matches) continue;
+      try {
+        // Extract mime type and base64 data
+        // Handle different formats: data:image/png;base64,... or data:image/jpeg;base64,...
+        const matches = base64Data.match(/^data:image\/([a-zA-Z0-9+\-/]+);base64,(.+)$/);
+        if (!matches) {
+          console.log(`Invalid base64 format at index ${i}`);
+          continue;
+        }
 
-      const mimeType = matches[1];
-      const base64String = matches[2];
-      const buffer = Buffer.from(base64String, 'base64');
+        const mimeType = matches[1];
+        const base64String = matches[2];
+        
+        // Convert base64 to buffer
+        const buffer = Buffer.from(base64String, 'base64');
+        
+        // Determine file extension
+        let ext = 'jpg';
+        if (mimeType.includes('png')) ext = 'png';
+        else if (mimeType.includes('gif')) ext = 'gif';
+        else if (mimeType.includes('webp')) ext = 'webp';
+        else if (mimeType.includes('jpeg')) ext = 'jpg';
 
-      // Create unique filename
-      const fileName = `${type}_${Date.now()}_${i}.${mimeType}`;
-      const file = bucket.file(`images/${fileName}`);
+        // Create unique filename
+        const fileName = `${type}_${Date.now()}_${i}.${ext}`;
+        const filePath = `images/${fileName}`;
+        
+        // Get Firebase Storage bucket
+        const bucket = admin.storage().bucket();
+        if (!bucket) {
+          throw new Error('Storage bucket not available');
+        }
+        
+        const file = bucket.file(filePath);
 
-      // Upload to Firebase Storage
-      await file.save(buffer, {
-        metadata: {
-          contentType: `image/${mimeType}`,
-        },
-        public: true, // Make file publicly accessible
-      });
+        // Upload file
+        await file.save(buffer, {
+          metadata: {
+            contentType: `image/${mimeType}`,
+            cacheControl: 'public, max-age=31536000',
+          },
+          public: true,
+        });
 
-      // Get public URL
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/images/${fileName}`;
-      uploadedUrls.push(publicUrl);
+        // Get public URL - Firebase Storage public files URL format
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        uploadedUrls.push(publicUrl);
+        console.log(`Uploaded image ${i + 1}: ${fileName}`);
+
+      } catch (uploadError) {
+        console.error(`Error uploading image ${i}:`, uploadError);
+        throw uploadError;
+      }
+    }
+
+    if (uploadedUrls.length === 0) {
+      return res.status(400).json({ error: 'No valid images to upload' });
     }
 
     res.json({ urls: uploadedUrls });
 
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ error: 'Upload failed' });
+    res.status(500).json({ error: `Upload failed: ${error.message}` });
   }
 });
 
