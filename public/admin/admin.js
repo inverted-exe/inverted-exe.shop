@@ -11,7 +11,7 @@ async function checkAuth() {
 
   try {
     // Verify token with backend
-    const response = await fetch('http://localhost:3000/api/auth/verify', {
+    const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/auth/verify', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionToken}`
@@ -49,7 +49,7 @@ async function logout() {
   const sessionToken = sessionStorage.getItem('sessionToken');
 
   try {
-    await fetch('http://localhost:3000/api/auth/logout', {
+    await fetch('https://inverted-exeshop-production.up.railway.app/api/auth/logout', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionToken}`
@@ -77,6 +77,35 @@ let adminData = {
   archive: [],
   gallery: []
 };
+
+// Upload image to backend API (which handles Firebase Storage)
+async function uploadImageToStorage(base64Data, fileName) {
+  try {
+    const sessionToken = sessionStorage.getItem('sessionToken');
+    const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/admin/upload-images', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${sessionToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        images: [base64Data],
+        type: 'shop' // or 'gallery', doesn't matter for upload
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
+    }
+
+    const result = await response.json();
+    return result.urls[0]; // Return the first (and only) URL
+
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+}
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
@@ -111,7 +140,7 @@ async function initializeAdmin() {
 async function loadAllData() {
   try {
     const sessionToken = sessionStorage.getItem('sessionToken');
-    const response = await fetch('http://localhost:3000/api/admin/data', {
+    const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/admin/data', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${sessionToken}`
@@ -701,6 +730,39 @@ async function saveShopItem() {
     return;
   }
 
+  // Upload base64 images to backend API
+  const base64Images = images.filter(img => img.startsWith('data:'));
+  let uploadedImages = images.filter(img => !img.startsWith('data:')); // Keep existing URLs
+
+  if (base64Images.length > 0) {
+    try {
+      showNotification(`uploading ${base64Images.length} image(s)...`);
+      const sessionToken = sessionStorage.getItem('sessionToken');
+      const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/admin/upload-images', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          images: base64Images,
+          type: 'shop'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
+      }
+
+      const result = await response.json();
+      uploadedImages = uploadedImages.concat(result.urls);
+    } catch (error) {
+      console.error('Failed to upload images:', error);
+      showNotification('failed to upload images', 'error');
+      return;
+    }
+  }
+
   // Get createdAt - handle case where it might be undefined
   let createdAt;
   if (currentEditingId !== null) {
@@ -713,8 +775,8 @@ async function saveShopItem() {
     id: currentEditingId !== null ? adminData.shop[currentEditingId].id : Date.now(),
     name,
     price,
-    images, // Store as array
-    image: images[0], // Keep first image as primary for backward compatibility
+    images: uploadedImages, // Store uploaded URLs
+    image: uploadedImages[0], // Keep first image as primary for backward compatibility
     description,
     teepublicLink,
     teesLink,
@@ -756,7 +818,7 @@ async function saveShopItem() {
 
     // Save to backend API
     const sessionToken = sessionStorage.getItem('sessionToken');
-    const response = await fetch('http://localhost:3000/api/admin/save', {
+    const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/admin/save', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionToken}`,
@@ -812,10 +874,41 @@ async function saveGalleryItem() {
     return;
   }
 
+  // Upload base64 image to backend API if needed
+  let finalImage = image;
+  if (image.startsWith('data:')) {
+    try {
+      showNotification('uploading image...');
+      const sessionToken = sessionStorage.getItem('sessionToken');
+      const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/admin/upload-images', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          images: [image],
+          type: 'gallery'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const result = await response.json();
+      finalImage = result.urls[0];
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      showNotification('failed to upload image', 'error');
+      return;
+    }
+  }
+
   const item = {
     id: currentEditingId !== null ? adminData.gallery[currentEditingId].id : Date.now(),
     title,
-    image,
+    image: finalImage,
     updatedAt: new Date().toISOString()
   };
 
@@ -830,7 +923,7 @@ async function saveGalleryItem() {
 
     // Save to backend API
     const sessionToken = sessionStorage.getItem('sessionToken');
-    const response = await fetch('http://localhost:3000/api/admin/save', {
+    const response = await fetch('https://inverted-exeshop-production.up.railway.app/api/admin/save', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionToken}`,

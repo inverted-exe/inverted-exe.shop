@@ -31,7 +31,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
 const ALLOWED_ADMINS = ['admin@inverted-exe.shop'];
@@ -198,10 +199,65 @@ app.post('/api/admin/save', async (req, res) => {
   }
 });
 
-// Logout
-app.post('/api/auth/logout', (req, res) => {
-  res.json({ success: true });
+// Protected: Upload images
+app.post('/api/admin/upload-images', async (req, res) => {
+  try {
+    const token = req.headers.authorization && req.headers.authorization.split('Bearer ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    jwt.verify(token, JWT_SECRET);
+    const { images, type } = req.body; // images: array of base64 strings, type: 'shop' or 'gallery'
+
+    if (!Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'No images provided' });
+    }
+
+    const bucket = admin.storage().bucket();
+    const uploadedUrls = [];
+
+    for (let i = 0; i < images.length; i++) {
+      const base64Data = images[i];
+      if (!base64Data.startsWith('data:image/')) {
+        continue; // Skip non-image data
+      }
+
+      // Extract mime type and base64 data
+      const matches = base64Data.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+      if (!matches) continue;
+
+      const mimeType = matches[1];
+      const base64String = matches[2];
+      const buffer = Buffer.from(base64String, 'base64');
+
+      // Create unique filename
+      const fileName = `${type}_${Date.now()}_${i}.${mimeType}`;
+      const file = bucket.file(`images/${fileName}`);
+
+      // Upload to Firebase Storage
+      await file.save(buffer, {
+        metadata: {
+          contentType: `image/${mimeType}`,
+        },
+        public: true, // Make file publicly accessible
+      });
+
+      // Get public URL
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/images/${fileName}`;
+      uploadedUrls.push(publicUrl);
+    }
+
+    res.json({ urls: uploadedUrls });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
 });
+
+// Logout
 
 // Health check
 app.get('/health', (req, res) => {

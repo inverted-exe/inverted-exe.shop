@@ -17,15 +17,8 @@
   
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="../database.js"></script>
-  <script>
-    const auth = firebase.auth();
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
-        window.location.href = '/admin/login.html';
-      }
-    });
-  </script>
 </head>
 <body>
   <header class="site-header">
@@ -138,11 +131,6 @@
 
   <div class="mobile-nav-overlay" id="mobileNav"></div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="../database.js"></script>
-  
   <!-- Admin JS -->
   <script src="admin.js"></script>
 </body>
