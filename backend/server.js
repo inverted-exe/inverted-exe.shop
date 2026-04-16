@@ -2,7 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
-require('dotenv').config();
+ const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_CLIENT_EMAIL) {
+  console.warn('Missing Firebase environment variables. Check .env and ensure FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL are set.');
+}
 
 const app = express();
 
@@ -22,7 +27,8 @@ const serviceAccount = {
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DB_URL
+  databaseURL: process.env.FIREBASE_DB_URL,
+  storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`
 });
 
 // Security middleware
@@ -208,11 +214,22 @@ app.post('/api/admin/upload-images', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (verifyError) {
+      console.error('Unauthorized upload attempt:', verifyError.message);
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { images, type } = req.body; // images: array of base64 strings, type: 'shop' or 'gallery'
 
     if (!Array.isArray(images) || images.length === 0) {
       return res.status(400).json({ error: 'No images provided' });
+    }
+
+    if (!['shop', 'gallery'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid type' });
     }
 
     const uploadedUrls = [];
@@ -253,9 +270,6 @@ app.post('/api/admin/upload-images', async (req, res) => {
         
         // Get Firebase Storage bucket
         const bucket = admin.storage().bucket();
-        if (!bucket) {
-          throw new Error('Storage bucket not available');
-        }
         
         const file = bucket.file(filePath);
 
@@ -264,12 +278,14 @@ app.post('/api/admin/upload-images', async (req, res) => {
           metadata: {
             contentType: `image/${mimeType}`,
             cacheControl: 'public, max-age=31536000',
-          },
-          public: true,
+          }
         });
 
-        // Get public URL - Firebase Storage public files URL format
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+        // Ensure the file is publicly readable
+        await file.makePublic();
+
+        // Use Storage public URL helper for consistency
+        const publicUrl = file.publicUrl();
         uploadedUrls.push(publicUrl);
         console.log(`Uploaded image ${i + 1}: ${fileName}`);
 
@@ -287,6 +303,11 @@ app.post('/api/admin/upload-images', async (req, res) => {
 
   } catch (error) {
     console.error('Upload error:', error);
+
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     res.status(500).json({ error: `Upload failed: ${error.message}` });
   }
 });
