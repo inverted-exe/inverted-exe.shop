@@ -11,6 +11,12 @@ if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !pr
 
 const app = express();
 
+const STORAGE_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || `${process.env.FIREBASE_PROJECT_ID}.appspot.com`;
+
+if (!STORAGE_BUCKET) {
+  console.warn('Missing Firebase storage bucket. Set FIREBASE_STORAGE_BUCKET or FIREBASE_PROJECT_ID in environment variables.');
+}
+
 // Initialize Firebase Admin
 const serviceAccount = {
   type: "service_account",
@@ -25,10 +31,12 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
 };
 
+console.log(`Using Firebase storage bucket: ${STORAGE_BUCKET}`);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.FIREBASE_DB_URL,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+  storageBucket: STORAGE_BUCKET
 });
 
 // Security middleware
@@ -268,8 +276,8 @@ app.post('/api/admin/upload-images', async (req, res) => {
         const fileName = `${type}_${Date.now()}_${i}.${ext}`;
         const filePath = `images/${fileName}`;
         
-        // Get Firebase Storage bucket
-        const bucket = admin.storage().bucket();
+        // Get Firebase Storage bucket explicitly
+        const bucket = admin.storage().bucket(STORAGE_BUCKET);
         
         const file = bucket.file(filePath);
 
