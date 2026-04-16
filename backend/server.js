@@ -28,7 +28,7 @@ const serviceAccount = {
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.FIREBASE_DB_URL,
-  storageBucket: `${process.env.FIREBASE_PROJECT_ID}.firebasestorage.app`
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET
 });
 
 // Security middleware
