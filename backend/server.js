@@ -28,7 +28,7 @@ const serviceAccount = {
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: process.env.FIREBASE_DB_URL,
-  storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${process.env.FIREBASE_PROJECT_ID}.appspot.com`
 });
 
 // Security middleware
